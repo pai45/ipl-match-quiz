@@ -675,6 +675,10 @@ function updateMeta() {
 
 // ── Generate Questions ──────────────────────────────────────────
 async function generateQuestions(matchId) {
+  if (!window.cowork?.askClaude) {
+    alert('Question generation only works inside the Cowork app. Open this tracker in Cowork to generate questions.');
+    return;
+  }
   const match = MATCHES.find(m => m.id === matchId);
   const btn = document.getElementById('gen-btn-' + matchId);
   if (!btn) return;
@@ -740,6 +744,7 @@ function matchHasEnded(match) {
 
 // ── Auto-fetch answers via Claude ───────────────────────────────
 async function autoFetchAnswers(matchId) {
+  if (!window.cowork?.askClaude) return; // only works inside Cowork
   const match = MATCHES.find(m => m.id === matchId);
   const ms = getMS(matchId);
   if (!match || ms.answers?.length > 0 || ms.fetching) return;
@@ -815,7 +820,11 @@ ANSWERS:
 
 // ── Manual Get Answers button (fallback) ────────────────────────
 function getAnswers(matchId) {
-  autoFetchAnswers(matchId);
+  if (window.cowork?.askClaude) {
+    autoFetchAnswers(matchId);
+  } else {
+    alert('Auto-fetch only works inside the Cowork app. Open this tracker in Cowork to use this feature.');
+  }
 }
 
 // ── Paste Modal ─────────────────────────────────────────────────
@@ -940,10 +949,3 @@ function renderMatchCard(match) {
 
   // Questions / Actions
   let contentHTML = '';
-
-  if (match.isTBD && !hasQ) {
-    contentHTML = `<div class="tbd-note">Teams will be determined after earlier playoff rounds. Questions will unlock once teams are confirmed — update the team names and click Generate.</div>`;
-  } else if (!hasQ) {
-    contentHTML = `
-      <div style="text-align:center; padding: 8px 0;">
-        <button class="btn btn-generate" id="gen-btn-${match.id}" onclic
