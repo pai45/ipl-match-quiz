@@ -6,946 +6,302 @@
 <title>IPL 2026 Playoff Quiz Tracker</title>
 <style>
   :root { color-scheme: light; }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: #f0f4f8;
-    color: #1a1a2e;
-    min-height: 100vh;
-    padding: 0 0 40px 0;
-  }
-
-  /* ── Header ── */
-  .hero {
-    background: linear-gradient(135deg, #004c8b 0%, #1a237e 60%, #880e4f 100%);
-    color: #fff;
-    padding: 28px 24px 22px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '🏏';
-    position: absolute;
-    font-size: 120px;
-    opacity: 0.07;
-    top: -20px;
-    left: -20px;
-  }
-  .hero::after {
-    content: '🏆';
-    position: absolute;
-    font-size: 120px;
-    opacity: 0.07;
-    bottom: -20px;
-    right: -20px;
-  }
-  .hero h1 {
-    font-size: 1.7rem;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    margin-bottom: 4px;
-  }
-  .hero p {
-    font-size: 0.88rem;
-    opacity: 0.8;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-  }
-
-  /* ── Progress bar ── */
-  .progress-bar-wrap {
-    background: #e2e8f0;
-    height: 6px;
-    border-radius: 3px;
-    margin: 20px 24px 0;
-    overflow: hidden;
-  }
-  .progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #f4a000, #e63946);
-    border-radius: 3px;
-    transition: width 0.5s ease;
-  }
-  .progress-label {
-    font-size: 0.78rem;
-    color: #64748b;
-    text-align: center;
-    margin-top: 6px;
-    padding: 0 24px;
-  }
-
-  /* ── Main container ── */
-  .container {
-    max-width: 820px;
-    margin: 0 auto;
-    padding: 24px 16px;
-  }
-
-  /* ── Match Card ── */
-  .match-card {
-    background: #ffffff;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 16px;
-    margin-bottom: 20px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    transition: box-shadow 0.2s;
-  }
-  .match-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  }
-  .match-card.answered {
-    border-color: #22c55e;
-    box-shadow: 0 2px 8px rgba(34,197,94,0.12);
-  }
-  .match-card.final-card {
-    border-color: #f4a000;
-    border-width: 2px;
-  }
-
-  /* Card top strip */
-  .card-strip {
-    height: 4px;
-  }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f4f8; color: #1a1a2e; min-height: 100vh; padding: 0 0 40px 0; }
+  .hero { background: linear-gradient(135deg, #004c8b 0%, #1a237e 60%, #880e4f 100%); color: #fff; padding: 28px 24px 22px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: '🏏'; position: absolute; font-size: 120px; opacity: 0.07; top: -20px; left: -20px; }
+  .hero::after  { content: '🏆'; position: absolute; font-size: 120px; opacity: 0.07; bottom: -20px; right: -20px; }
+  .hero h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+  .hero p  { font-size: 0.88rem; opacity: 0.8; letter-spacing: 1.5px; text-transform: uppercase; }
+  .progress-bar-wrap { background: #e2e8f0; height: 6px; border-radius: 3px; margin: 20px 24px 0; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #f4a000, #e63946); border-radius: 3px; transition: width 0.5s ease; }
+  .progress-label    { font-size: 0.78rem; color: #64748b; text-align: center; margin-top: 6px; padding: 0 24px; }
+  .container { max-width: 820px; margin: 0 auto; padding: 24px 16px; }
+  .match-card { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 16px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: box-shadow 0.2s; }
+  .match-card:hover    { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+  .match-card.answered { border-color: #22c55e; box-shadow: 0 2px 8px rgba(34,197,94,0.12); }
+  .match-card.final-card { border-color: #f4a000; border-width: 2px; }
+  .card-strip   { height: 4px; }
   .strip-league { background: linear-gradient(90deg, #0f172a, #4f46e5); }
-  .strip-q1    { background: linear-gradient(90deg, #e63946, #ff6b6b); }
-  .strip-elim  { background: linear-gradient(90deg, #f4a000, #ffcc02); }
-  .strip-q2    { background: linear-gradient(90deg, #7c3aed, #a855f7); }
-  .strip-final { background: linear-gradient(90deg, #004c8b, #f4a000); }
-
+  .strip-q1     { background: linear-gradient(90deg, #e63946, #ff6b6b); }
+  .strip-elim   { background: linear-gradient(90deg, #f4a000, #ffcc02); }
+  .strip-q2     { background: linear-gradient(90deg, #7c3aed, #a855f7); }
+  .strip-final  { background: linear-gradient(90deg, #004c8b, #f4a000); }
   .card-body { padding: 18px 20px 20px; }
-
-  /* Card header row */
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .match-type-label {
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    background: #f1f5f9;
-    border-radius: 20px;
-    padding: 4px 12px;
-    color: #475569;
-  }
-  .match-type-label.final-label {
-    background: linear-gradient(135deg, #004c8b, #f4a000);
-    color: #fff;
-  }
-
-  /* Status badges */
-  .badge {
-    font-size: 0.72rem;
-    font-weight: 700;
-    border-radius: 20px;
-    padding: 4px 12px;
-  }
-  .badge-upcoming  { background: #dbeafe; color: #1d4ed8; }
-  .badge-answered  { background: #dcfce7; color: #15803d; }
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+  .match-type-label { font-size: 0.72rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; background: #f1f5f9; border-radius: 20px; padding: 4px 12px; color: #475569; }
+  .match-type-label.final-label { background: linear-gradient(135deg, #004c8b, #f4a000); color: #fff; }
+  .badge { font-size: 0.72rem; font-weight: 700; border-radius: 20px; padding: 4px 12px; display: inline-flex; align-items: center; gap: 5px; }
+  .badge-upcoming       { background: #dbeafe; color: #1d4ed8; }
+  .badge-answered       { background: #dcfce7; color: #15803d; }
   .badge-pending-result { background: #fef9c3; color: #92400e; }
-  .badge-tbd       { background: #f1f5f9; color: #94a3b8; }
-  .badge-fetching  { background: #ede9fe; color: #6d28d9; }
-
-  /* Teams display */
-  .teams-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    padding: 10px 0 8px;
-  }
-  .team-block {
-    text-align: center;
-    flex: 1;
-  }
-  .team-abbr {
-    font-size: 1.6rem;
-    font-weight: 900;
-    letter-spacing: -1px;
-    color: #1e293b;
-  }
-  .team-full {
-    font-size: 0.72rem;
-    color: #64748b;
-    margin-top: 2px;
-  }
-  .vs-badge {
-    background: #f1f5f9;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    font-weight: 800;
-    color: #94a3b8;
-    flex-shrink: 0;
-  }
-
-  /* Match meta */
-  .match-meta {
-    font-size: 0.76rem;
-    color: #64748b;
-    text-align: center;
-    margin: 4px 0 16px;
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-  .match-meta span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  /* Divider */
-  .divider {
-    border: none;
-    border-top: 1px solid #f1f5f9;
-    margin: 0 0 16px;
-  }
-
-  /* Questions section */
-  .section-label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #94a3b8;
-    margin-bottom: 10px;
-  }
-
-  .questions-list {
-    list-style: none;
-    counter-reset: q-counter;
-  }
-  .question-item {
-    counter-increment: q-counter;
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-    align-items: flex-start;
-  }
-  .question-item::before {
-    content: counter(q-counter);
-    background: #1e293b;
-    color: #fff;
-    font-size: 0.65rem;
-    font-weight: 800;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .q-text {
-    font-size: 0.88rem;
-    color: #334155;
-    line-height: 1.45;
-    flex: 1;
-  }
-  .q-answer {
-    margin-top: 4px;
-    font-size: 0.8rem;
-    color: #15803d;
-    font-weight: 600;
-    background: #f0fdf4;
-    border-radius: 6px;
-    padding: 4px 8px;
-    border-left: 3px solid #22c55e;
-  }
-
-  /* Result banner */
-  .result-banner {
-    background: linear-gradient(135deg, #004c8b12, #1a237e10);
-    border: 1px solid #004c8b30;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 0.84rem;
-    font-weight: 600;
-    color: #004c8b;
-    margin: 12px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* Buttons */
-  .btn-row {
-    display: flex;
-    gap: 10px;
-    margin-top: 14px;
-    flex-wrap: wrap;
-  }
-  .btn {
-    border: none;
-    border-radius: 10px;
-    padding: 9px 16px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: opacity 0.2s, transform 0.1s;
-    white-space: nowrap;
-  }
-  .btn:hover  { opacity: 0.88; transform: translateY(-1px); }
-  .btn:active { transform: translateY(0); }
+  .badge-tbd            { background: #f1f5f9; color: #94a3b8; }
+  .badge-fetching       { background: #ede9fe; color: #6d28d9; }
+  .teams-row  { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 10px 0 8px; }
+  .team-block { text-align: center; flex: 1; }
+  .team-abbr  { font-size: 1.6rem; font-weight: 900; letter-spacing: -1px; color: #1e293b; }
+  .team-full  { font-size: 0.72rem; color: #64748b; margin-top: 2px; }
+  .vs-badge   { background: #f1f5f9; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; color: #94a3b8; flex-shrink: 0; }
+  .match-meta { font-size: 0.76rem; color: #64748b; text-align: center; margin: 4px 0 16px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .match-meta span { display: flex; align-items: center; gap: 4px; }
+  .divider { border: none; border-top: 1px solid #f1f5f9; margin: 0 0 16px; }
+  .section-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 10px; }
+  .questions-list { list-style: none; counter-reset: q-counter; }
+  .question-item { counter-increment: q-counter; display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+  .question-item::before { content: counter(q-counter); background: #1e293b; color: #fff; font-size: 0.65rem; font-weight: 800; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .q-text   { font-size: 0.88rem; color: #334155; line-height: 1.45; flex: 1; }
+  .q-answer { margin-top: 4px; font-size: 0.8rem; color: #15803d; font-weight: 600; background: #f0fdf4; border-radius: 6px; padding: 4px 8px; border-left: 3px solid #22c55e; }
+  .result-banner { background: linear-gradient(135deg, #004c8b12, #1a237e10); border: 1px solid #004c8b30; border-radius: 10px; padding: 10px 14px; font-size: 0.84rem; font-weight: 600; color: #004c8b; margin: 12px 0; display: flex; align-items: center; gap: 8px; }
+  .btn-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .btn { border: none; border-radius: 10px; padding: 9px 16px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: opacity 0.2s, transform 0.1s; white-space: nowrap; }
+  .btn:hover    { opacity: 0.88; transform: translateY(-1px); }
+  .btn:active   { transform: translateY(0); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-  .btn-generate {
-    background: linear-gradient(135deg, #004c8b, #1a237e);
-    color: #fff;
-    flex: 1;
-  }
-  .btn-answer {
-    background: linear-gradient(135deg, #f4a000, #e67e00);
-    color: #fff;
-  }
-  .btn-paste {
-    background: #f1f5f9;
-    color: #334155;
-    border: 1px solid #e2e8f0;
-  }
-  .btn-reset {
-    background: #fee2e2;
-    color: #dc2626;
-    font-size: 0.75rem;
-  }
-
-  /* TBD note */
-  .tbd-note {
-    font-size: 0.82rem;
-    color: #94a3b8;
-    text-align: center;
-    padding: 12px;
-    background: #f8fafc;
-    border-radius: 10px;
-    border: 1px dashed #e2e8f0;
-  }
-
-  /* ── Paste Modal ── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.45);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
+  .btn-generate { background: linear-gradient(135deg, #004c8b, #1a237e); color: #fff; flex: 1; }
+  .btn-answer   { background: linear-gradient(135deg, #f4a000, #e67e00); color: #fff; }
+  .btn-paste    { background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; }
+  .btn-reset    { background: #fee2e2; color: #dc2626; font-size: 0.75rem; }
+  .tbd-note { font-size: 0.82rem; color: #94a3b8; text-align: center; padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px dashed #e2e8f0; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
   .modal-overlay.open { display: flex; }
-  .modal {
-    background: #fff;
-    border-radius: 16px;
-    padding: 24px;
-    max-width: 560px;
-    width: 100%;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-  }
-  .modal h3 {
-    font-size: 1rem;
-    font-weight: 800;
-    color: #1e293b;
-    margin-bottom: 6px;
-  }
-  .modal p {
-    font-size: 0.8rem;
-    color: #64748b;
-    margin-bottom: 14px;
-    line-height: 1.5;
-  }
-  .modal textarea {
-    width: 100%;
-    height: 180px;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 12px;
-    font-size: 0.82rem;
-    font-family: inherit;
-    color: #334155;
-    resize: vertical;
-    outline: none;
-    transition: border-color 0.2s;
-  }
+  .modal { background: #fff; border-radius: 16px; padding: 24px; max-width: 560px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .modal h3 { font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 6px; }
+  .modal p  { font-size: 0.8rem; color: #64748b; margin-bottom: 14px; line-height: 1.5; }
+  .modal textarea { width: 100%; height: 180px; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px; font-size: 0.82rem; font-family: inherit; color: #334155; resize: vertical; outline: none; }
   .modal textarea:focus { border-color: #004c8b; }
-  .modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 14px;
-    justify-content: flex-end;
-  }
-  .btn-cancel {
-    background: #f1f5f9;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
-  }
-  .btn-save {
-    background: linear-gradient(135deg, #004c8b, #1a237e);
-    color: #fff;
-  }
-
-  /* ── How it works ── */
-  .howto {
-    background: #fff;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 18px 20px;
-    margin-bottom: 24px;
-  }
-  .howto h3 {
-    font-size: 0.82rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #64748b;
-    margin-bottom: 12px;
-  }
-  .steps {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-  }
-  .step {
-    background: #f8fafc;
-    border-radius: 10px;
-    padding: 12px;
-    text-align: center;
-  }
-  .step-icon { font-size: 1.4rem; margin-bottom: 6px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 14px; justify-content: flex-end; }
+  .btn-cancel { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+  .btn-save   { background: linear-gradient(135deg, #004c8b, #1a237e); color: #fff; }
+  .howto { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 18px 20px; margin-bottom: 24px; }
+  .howto h3 { font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 12px; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .step { background: #f8fafc; border-radius: 10px; padding: 12px; text-align: center; }
+  .step-icon  { font-size: 1.4rem; margin-bottom: 6px; }
   .step-title { font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 3px; }
   .step-desc  { font-size: 0.72rem; color: #64748b; line-height: 1.4; }
-
-  /* Spinner */
-  .spinner {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(255,255,255,0.4);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── Score card ── */
-  .score-card {
-    background: linear-gradient(135deg, #004c8b08, #1a237e05);
-    border: 1px solid #004c8b20;
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .score-card .score-item {
-    text-align: center;
-    flex: 1;
-    min-width: 80px;
-  }
-  .score-num {
-    font-size: 1.6rem;
-    font-weight: 900;
-    color: #004c8b;
-  }
-  .score-desc {
-    font-size: 0.7rem;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-  }
-  .score-divider {
-    width: 1px;
-    height: 40px;
-    background: #e2e8f0;
-    flex-shrink: 0;
-  }
+  .score-card { background: linear-gradient(135deg, #004c8b08, #1a237e05); border: 1px solid #004c8b20; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .score-card .score-item { text-align: center; flex: 1; min-width: 80px; }
+  .score-num  { font-size: 1.6rem; font-weight: 900; color: #004c8b; }
+  .score-desc { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; }
+  .score-divider { width: 1px; height: 40px; background: #e2e8f0; flex-shrink: 0; }
 </style>
 </head>
 <body>
-
-<!-- Hero -->
 <div class="hero">
   <h1>🏏 IPL 2026 Playoff Quiz</h1>
   <p>Predict · Track · Verify</p>
 </div>
-
 <div class="container">
-
-  <!-- How it works -->
   <div class="howto">
     <h3>⚡ How it works</h3>
     <div class="steps">
-      <div class="step">
-        <div class="step-icon">✨</div>
-        <div class="step-title">Generate</div>
-        <div class="step-desc">Click to auto-generate 7 quiz questions per match</div>
-      </div>
-      <div class="step">
-        <div class="step-icon">📋</div>
-        <div class="step-title">Predict</div>
-        <div class="step-desc">Review questions before the match starts</div>
-      </div>
-      <div class="step">
-        <div class="step-icon">🔍</div>
-        <div class="step-title">Fetch Answers</div>
-        <div class="step-desc">After the match, Claude searches the web for results</div>
-      </div>
-      <div class="step">
-        <div class="step-icon">✅</div>
-        <div class="step-title">Verify</div>
-        <div class="step-desc">Paste Claude's answers to reveal the correct responses</div>
-      </div>
+      <div class="step"><div class="step-icon">✨</div><div class="step-title">Generate</div><div class="step-desc">Auto-generate 7 quiz questions per match</div></div>
+      <div class="step"><div class="step-icon">📋</div><div class="step-title">Predict</div><div class="step-desc">Review questions before match starts</div></div>
+      <div class="step"><div class="step-icon">🔍</div><div class="step-title">Auto-Fetch</div><div class="step-desc">Claude searches web for results after match ends</div></div>
+      <div class="step"><div class="step-icon">✅</div><div class="step-title">Verify</div><div class="step-desc">Answers populate automatically</div></div>
     </div>
   </div>
-
-  <!-- Score summary -->
   <div class="score-card" id="score-card"></div>
-
-  <!-- Progress -->
-  <div class="progress-bar-wrap">
-    <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
-  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
   <p class="progress-label" id="progress-label">Loading matches...</p>
-
-  <!-- Match cards -->
   <div id="matches-container" style="margin-top:20px;"></div>
-
 </div>
-
-<!-- Paste Answers Modal -->
 <div class="modal-overlay" id="paste-modal">
   <div class="modal">
-    <h3>📋 Paste Claude's Answers</h3>
-    <p>
-      After clicking "Get Answers" in the chat, copy Claude's full response and paste it here.
-      The format should start with <strong>MATCH RESULT:</strong> followed by numbered answers.
-    </p>
-    <textarea id="paste-textarea" placeholder="MATCH RESULT: RCB won by 6 wickets
-ANSWERS:
-1. RCB won the toss
-2. Virat Kohli scored 78 runs
-..."></textarea>
+    <h3>📋 Paste Match Answers</h3>
+    <p>Paste the result and answers below.</p>
+    <textarea id="paste-textarea" placeholder="MATCH RESULT: RCB won by 6 wickets&#10;ANSWERS:&#10;1. RCB&#10;2. Kohli..."></textarea>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closePasteModal()">Cancel</button>
-      <button class="btn btn-save" onclick="saveAnswers()">💾 Save Answers</button>
+      <button class="btn btn-save" onclick="saveAnswers()">Save</button>
     </div>
   </div>
 </div>
-
 <input type="hidden" id="paste-match-id" value="">
-
 <script>
-// ── Match data ──────────────────────────────────────────────────
-const MATCHES = [
-  {
-    id: 'mi-rr',
-    type: 'Match 69',
-    strip: 'strip-league',
-    emoji: '🏏',
-    teams: ['MI', 'RR'],
-    fullNames: ['Mumbai Indians', 'Rajasthan Royals'],
-    date: 'May 24, 2026',
-    time: '3:30 PM IST',
-    venue: 'Wankhede Stadium, Mumbai',
-    isFinal: false,
-    isTBD: false
-  },
-  {
-    id: 'kkr-dc',
-    type: 'Match 70',
-    strip: 'strip-league',
-    emoji: '🏏',
-    teams: ['KKR', 'DC'],
-    fullNames: ['Kolkata Knight Riders', 'Delhi Capitals'],
-    date: 'May 24, 2026',
-    time: '7:30 PM IST',
-    venue: 'Eden Gardens, Kolkata',
-    isFinal: false,
-    isTBD: false
-  },
-  {
-    id: 'q1',
-    type: 'Qualifier 1',
-    strip: 'strip-q1',
-    emoji: '🥊',
-    teams: ['RCB', 'GT'],
-    fullNames: ['Royal Challengers Bengaluru', 'Gujarat Titans'],
-    date: 'May 26, 2026',
-    time: '7:30 PM IST',
-    venue: 'HPCA Stadium, Dharamsala',
-    isFinal: false,
-    isTBD: false
-  },
-  {
-    id: 'elim',
-    type: 'Eliminator',
-    strip: 'strip-elim',
-    emoji: '⚔️',
-    teams: ['SRH', 'RR'],
-    fullNames: ['Sunrisers Hyderabad', 'Rajasthan Royals'],
-    date: 'May 27, 2026',
-    time: '7:30 PM IST',
-    venue: 'MYS Stadium, Mullanpur',
-    isFinal: false,
-    isTBD: false
-  },
-  {
-    id: 'q2',
-    type: 'Qualifier 2',
-    strip: 'strip-q2',
-    emoji: '🎯',
-    teams: ['TBD', 'TBD'],
-    fullNames: ['Loser of Qualifier 1', 'Winner of Eliminator'],
-    date: 'May 29, 2026',
-    time: '7:30 PM IST',
-    venue: 'MYS Stadium, Mullanpur',
-    isFinal: false,
-    isTBD: true
-  },
-  {
-    id: 'final',
-    type: '🏆 FINAL',
-    strip: 'strip-final',
-    emoji: '🏆',
-    teams: ['TBD', 'TBD'],
-    fullNames: ['Winner of Qualifier 1', 'Winner of Qualifier 2'],
-    date: 'May 31, 2026',
-    time: '7:30 PM IST',
-    venue: 'Narendra Modi Stadium, Ahmedabad',
-    isFinal: true,
-    isTBD: true
-  }
+var MATCHES = [
+  { id:'mi-rr',  type:'Match 69',    strip:'strip-league', emoji:'🏏', teams:['MI','RR'],    fullNames:['Mumbai Indians','Rajasthan Royals'],                date:'May 24, 2026', time:'3:30 PM IST', venue:'Wankhede Stadium, Mumbai',            isFinal:false, isTBD:false },
+  { id:'kkr-dc', type:'Match 70',    strip:'strip-league', emoji:'🏏', teams:['KKR','DC'],   fullNames:['Kolkata Knight Riders','Delhi Capitals'],            date:'May 24, 2026', time:'7:30 PM IST', venue:'Eden Gardens, Kolkata',               isFinal:false, isTBD:false },
+  { id:'q1',     type:'Qualifier 1', strip:'strip-q1',     emoji:'🥊', teams:['RCB','GT'],   fullNames:['Royal Challengers Bengaluru','Gujarat Titans'],      date:'May 26, 2026', time:'7:30 PM IST', venue:'HPCA Stadium, Dharamsala',            isFinal:false, isTBD:false },
+  { id:'elim',   type:'Eliminator',  strip:'strip-elim',   emoji:'⚔️', teams:['SRH','RR'],   fullNames:['Sunrisers Hyderabad','Rajasthan Royals'],            date:'May 27, 2026', time:'7:30 PM IST', venue:'MYS Stadium, Mullanpur',              isFinal:false, isTBD:false },
+  { id:'q2',     type:'Qualifier 2', strip:'strip-q2',     emoji:'🎯', teams:['TBD','TBD'],  fullNames:['Loser of Qualifier 1','Winner of Eliminator'],       date:'May 29, 2026', time:'7:30 PM IST', venue:'MYS Stadium, Mullanpur',              isFinal:false, isTBD:true  },
+  { id:'final',  type:'FINAL',       strip:'strip-final',  emoji:'🏆', teams:['TBD','TBD'],  fullNames:['Winner of Qualifier 1','Winner of Qualifier 2'],     date:'May 31, 2026', time:'7:30 PM IST', venue:'Narendra Modi Stadium, Ahmedabad',    isFinal:true,  isTBD:true  }
 ];
 
-// ── State ───────────────────────────────────────────────────────
-let state = {};
-try { state = JSON.parse(localStorage.getItem('ipl2026_quiz') || '{}'); } catch(e) {}
+var state = {};
+try { state = JSON.parse(localStorage.getItem('ipl2026_quiz') || '{}'); } catch(e) { state = {}; }
+function saveState() { try { localStorage.setItem('ipl2026_quiz', JSON.stringify(state)); } catch(e) {} }
+function getMS(id) { return state[id] || { questions:[], answers:[], result:'', status:'upcoming', fetching:false }; }
 
-function saveState() {
-  localStorage.setItem('ipl2026_quiz', JSON.stringify(state));
-}
-
-function getMS(id) {
-  return state[id] || { questions: [], answers: [], result: '', status: 'upcoming' };
-}
-
-// ── Score + Progress ────────────────────────────────────────────
-function updateMeta() {
-  const total = MATCHES.length;
-  const withQ  = MATCHES.filter(m => getMS(m.id).questions?.length > 0).length;
-  const withA  = MATCHES.filter(m => getMS(m.id).answers?.length > 0).length;
-
-  // Score card
-  document.getElementById('score-card').innerHTML = `
-    <div class="score-item"><div class="score-num">${total}</div><div class="score-desc">Matches</div></div>
-    <div class="score-divider"></div>
-    <div class="score-item"><div class="score-num">${withQ * 7}</div><div class="score-desc">Questions Generated</div></div>
-    <div class="score-divider"></div>
-    <div class="score-item"><div class="score-num">${withA * 7}</div><div class="score-desc">Answers Revealed</div></div>
-    <div class="score-divider"></div>
-    <div class="score-item"><div class="score-num">${withA}/${total}</div><div class="score-desc">Completed</div></div>
-  `;
-
-  // Progress bar
-  const pct = Math.round((withA / total) * 100);
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('progress-label').textContent =
-    withA === total ? '🎉 All matches answered!' :
-    `${withA} of ${total} matches answered · ${withQ} quizzes ready`;
-}
-
-// ── Generate Questions ──────────────────────────────────────────
-async function generateQuestions(matchId) {
-  if (!window.cowork?.askClaude) {
-    alert('Question generation only works inside the Cowork app. Open this tracker in Cowork to generate questions.');
-    return;
-  }
-  const match = MATCHES.find(m => m.id === matchId);
-  const btn = document.getElementById('gen-btn-' + matchId);
-  if (!btn) return;
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Generating...';
-
+function matchHasEnded(m) {
   try {
-    const prompt = `You are an expert IPL cricket analyst. Generate exactly 7 quiz questions for the upcoming IPL 2026 ${match.type} match: ${match.fullNames[0]} vs ${match.fullNames[1]} on ${match.date} at ${match.venue}.
-
-Include these question types (one each unless specified):
-1. Match winner prediction
-2. Toss winner prediction
-3. Top run-scorer of the match (name a specific player)
-4. Top wicket-taker of the match (name a specific player)
-5. Fantasy cricket: Best captain pick and why
-6. Head-to-head or venue stats question (factual, with answer hint)
-7. Player of the Match prediction
-
-IMPORTANT: Respond with ONLY a valid JSON array, no other text. Each item must have "q" (question string) and "type" (one of: prediction, player, fantasy, stats).
-
-Example format:
-[{"q":"Who will win the match?","type":"prediction"},{"q":"Who will win the toss?","type":"prediction"}]`;
-
-    const raw = await window.cowork.askClaude(prompt, []);
-
-    // Coerce to string regardless of what askClaude returns
-    const result = typeof raw === 'string' ? raw
-      : (raw?.text ?? raw?.content ?? raw?.message ?? JSON.stringify(raw));
-
-    // Robustly extract JSON array
-    const jsonMatch = result.match(/\[[\s\S]*?\]/);
-    if (!jsonMatch) throw new Error('No JSON found in response');
-
-    const questions = JSON.parse(jsonMatch[0]);
-    if (!Array.isArray(questions) || questions.length === 0) throw new Error('Empty array');
-
-    if (!state[matchId]) state[matchId] = {};
-    state[matchId].questions = questions.slice(0, 7);
-    state[matchId].answers   = [];
-    state[matchId].result    = '';
-    state[matchId].status    = 'upcoming';
-    saveState();
-    renderAll();
-  } catch(err) {
-    btn.disabled = false;
-    btn.innerHTML = '✨ Generate Questions';
-    alert('Could not generate questions. Please try again.\n\n' + (err.message || ''));
-  }
-}
-
-// ── Match end time check (start + 4 hours) ─────────────────────
-function matchHasEnded(match) {
-  try {
-    const [datePart] = [match.date];
-    const timeStr = match.time.replace(' IST', '');
-    const dt = new Date(`${datePart} ${timeStr}`);
-    // IST = UTC+5:30
-    const utcMs = dt.getTime() - (5.5 * 60 * 60 * 1000);
-    const endUtcMs = utcMs + (4 * 60 * 60 * 1000); // match + 4hrs
-    return Date.now() > endUtcMs;
+    var dt = new Date(m.date + ' ' + m.time.replace(' IST',''));
+    return Date.now() > (dt.getTime() - 19800000 + 14400000);
   } catch(e) { return false; }
 }
 
-// ── Auto-fetch answers via Claude ───────────────────────────────
-async function autoFetchAnswers(matchId) {
-  if (!window.cowork?.askClaude) return; // only works inside Cowork
-  const match = MATCHES.find(m => m.id === matchId);
-  const ms = getMS(matchId);
-  if (!match || ms.answers?.length > 0 || ms.fetching) return;
+function updateMeta() {
+  var total = MATCHES.length;
+  var withQ = MATCHES.filter(function(m){ var s=getMS(m.id); return s.questions && s.questions.length>0; }).length;
+  var withA = MATCHES.filter(function(m){ var s=getMS(m.id); return s.answers && s.answers.length>0; }).length;
+  document.getElementById('score-card').innerHTML =
+    '<div class="score-item"><div class="score-num">'+total+'</div><div class="score-desc">Matches</div></div>'+
+    '<div class="score-divider"></div>'+
+    '<div class="score-item"><div class="score-num">'+(withQ*7)+'</div><div class="score-desc">Questions</div></div>'+
+    '<div class="score-divider"></div>'+
+    '<div class="score-item"><div class="score-num">'+(withA*7)+'</div><div class="score-desc">Answers</div></div>'+
+    '<div class="score-divider"></div>'+
+    '<div class="score-item"><div class="score-num">'+withA+'/'+total+'</div><div class="score-desc">Completed</div></div>';
+  var pct = Math.round((withA/total)*100);
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-label').textContent =
+    withA===total ? '🎉 All matches completed!' : withA+' of '+total+' answered · '+withQ+' quizzes ready';
+}
 
-  // Mark as fetching to prevent duplicate calls
-  if (!state[matchId]) state[matchId] = {};
-  state[matchId].fetching = true;
-  state[matchId].status = 'fetching';
-  saveState();
-  renderAll();
+function hasCowork() { return !!(window.cowork && window.cowork.askClaude); }
 
-  const qList = (ms.questions || []).map((q, i) => `${i+1}. ${q.q || q}`).join('\n');
+function coerceString(raw) {
+  if (typeof raw === 'string') return raw;
+  if (raw && raw.text) return raw.text;
+  if (raw && raw.content) return raw.content;
+  if (raw && raw.message) return raw.message;
+  return JSON.stringify(raw);
+}
 
-  const prompt = `Search the web for the live result of the IPL 2026 ${match.type} match: ${match.fullNames[0]} vs ${match.fullNames[1]} played on ${match.date} at ${match.venue}.
+function parseAnswers(text) {
+  var result='', answers=[], inA=false;
+  text.split('\n').forEach(function(raw){
+    var line=raw.trim(); if(!line) return;
+    if(/^MATCH RESULT:/i.test(line)) result=line.replace(/^MATCH RESULT:\s*/i,'');
+    else if(/^ANSWERS:/i.test(line)) inA=true;
+    else if(inA && /^\d+[\.\)]\s+/.test(line)) answers.push(line.replace(/^\d+[\.\)]\s+/,''));
+  });
+  return { result:result, answers:answers };
+}
 
-Find the actual match result and answer these pre-match quiz questions based on what really happened:
-${qList}
-
-Respond ONLY in this exact format, no extra text:
-MATCH RESULT: [one-line summary with winner and margin e.g. "RCB won by 6 wickets"]
-ANSWERS:
-1. [Answer]
-2. [Answer]
-3. [Answer]
-4. [Answer]
-5. [Answer]
-6. [Answer]
-7. [Answer]`;
-
+async function generateQuestions(matchId) {
+  if (!hasCowork()) { alert('Question generation only works inside the Cowork app.'); return; }
+  var match = MATCHES.find(function(m){ return m.id===matchId; });
+  var btn = document.getElementById('gen-btn-'+matchId);
+  if (!btn) return;
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Generating...';
   try {
-    const raw = await window.cowork.askClaude(prompt, []);
-    const result = typeof raw === 'string' ? raw
-      : (raw?.text ?? raw?.content ?? raw?.message ?? JSON.stringify(raw));
-
-    // Parse result
-    let matchResult = '';
-    const answers = [];
-    const lines = result.split('\n');
-    let inAnswers = false;
-
-    for (const raw of lines) {
-      const line = raw.trim();
-      if (!line) continue;
-      if (/^MATCH RESULT:/i.test(line)) {
-        matchResult = line.replace(/^MATCH RESULT:\s*/i, '').trim();
-      } else if (/^ANSWERS:/i.test(line)) {
-        inAnswers = true;
-      } else if (inAnswers && /^\d+[\.\)]\s+/.test(line)) {
-        answers.push(line.replace(/^\d+[\.\)]\s+/, '').trim());
-      }
-    }
-
-    if (answers.length > 0) {
-      state[matchId].result   = matchResult;
-      state[matchId].answers  = answers;
-      state[matchId].status   = 'answered';
-      state[matchId].fetching = false;
-      state[matchId].autoFetched = true;
-    } else {
-      // No answers parsed — retry later
-      state[matchId].fetching = false;
-      state[matchId].status   = 'upcoming';
-    }
-    saveState();
-    renderAll();
+    var prompt = 'You are an expert IPL cricket analyst. Generate exactly 7 quiz questions for the IPL 2026 '+match.type+' match: '+match.fullNames[0]+' vs '+match.fullNames[1]+' on '+match.date+' at '+match.venue+'.\n\nInclude: 1) Match winner 2) Toss winner 3) Top run-scorer 4) Top wicket-taker 5) Fantasy captain 6) Head-to-head/venue stat 7) Player of the Match.\n\nRespond with ONLY a valid JSON array. Each item: {"q":"question","type":"prediction|player|fantasy|stats"}\nExample: [{"q":"Who will win?","type":"prediction"}]';
+    var result = coerceString(await window.cowork.askClaude(prompt, []));
+    var jsonMatch = result.match(/\[[\s\S]*?\]/);
+    if (!jsonMatch) throw new Error('No JSON found');
+    var questions = JSON.parse(jsonMatch[0]);
+    if (!Array.isArray(questions) || !questions.length) throw new Error('Empty');
+    state[matchId] = { questions:questions.slice(0,7), answers:[], result:'', status:'upcoming', fetching:false };
+    saveState(); renderAll();
   } catch(err) {
-    state[matchId].fetching = false;
-    state[matchId].status   = 'upcoming';
-    saveState();
-    renderAll();
+    btn.disabled=false; btn.innerHTML='✨ Generate Questions';
+    alert('Could not generate. Try again.\n'+(err.message||''));
   }
 }
 
-// ── Manual Get Answers button (fallback) ────────────────────────
-function getAnswers(matchId) {
-  if (window.cowork?.askClaude) {
-    autoFetchAnswers(matchId);
-  } else {
-    alert('Auto-fetch only works inside the Cowork app. Open this tracker in Cowork to use this feature.');
-  }
-}
-
-// ── Paste Modal ─────────────────────────────────────────────────
-function showPasteModal(matchId) {
-  document.getElementById('paste-match-id').value = matchId;
-  document.getElementById('paste-textarea').value = '';
-  document.getElementById('paste-modal').classList.add('open');
-}
-
-function closePasteModal() {
-  document.getElementById('paste-modal').classList.remove('open');
-}
-
-function saveAnswers() {
-  const matchId = document.getElementById('paste-match-id').value;
-  const text = document.getElementById('paste-textarea').value.trim();
-  if (!text) { alert('Please paste Claude\'s response first.'); return; }
-
-  // Parse
-  let result = '';
-  const answers = [];
-
-  const lines = text.split('\n');
-  let inAnswers = false;
-
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (!line) continue;
-
-    if (/^MATCH RESULT:/i.test(line)) {
-      result = line.replace(/^MATCH RESULT:\s*/i, '').trim();
-    } else if (/^ANSWERS:/i.test(line)) {
-      inAnswers = true;
-    } else if (inAnswers && /^\d+[\.\)]\s+/.test(line)) {
-      answers.push(line.replace(/^\d+[\.\)]\s+/, '').trim());
+async function autoFetchAnswers(matchId) {
+  if (!hasCowork()) return;
+  var match = MATCHES.find(function(m){ return m.id===matchId; });
+  var ms = getMS(matchId);
+  if (!match || (ms.answers && ms.answers.length>0) || ms.fetching) return;
+  state[matchId] = Object.assign({}, ms, { fetching:true, status:'fetching' });
+  saveState(); renderAll();
+  var qList = (ms.questions||[]).map(function(q,i){ return (i+1)+'. '+(q.q||q); }).join('\n');
+  var prompt = 'Search the web for the result of IPL 2026 '+match.type+': '+match.fullNames[0]+' vs '+match.fullNames[1]+' on '+match.date+' at '+match.venue+'.\n\nAnswer these questions based on the actual result:\n'+qList+'\n\nRespond ONLY in this format:\nMATCH RESULT: [one-line summary]\nANSWERS:\n1. [Answer]\n2. [Answer]\n3. [Answer]\n4. [Answer]\n5. [Answer]\n6. [Answer]\n7. [Answer]';
+  try {
+    var parsed = parseAnswers(coerceString(await window.cowork.askClaude(prompt, [])));
+    if (parsed.answers.length > 0) {
+      state[matchId] = Object.assign({}, getMS(matchId), { result:parsed.result, answers:parsed.answers, status:'answered', fetching:false, autoFetched:true });
+    } else {
+      state[matchId] = Object.assign({}, getMS(matchId), { fetching:false, status:'upcoming' });
     }
+  } catch(e) {
+    state[matchId] = Object.assign({}, getMS(matchId), { fetching:false, status:'upcoming' });
   }
-
-  if (answers.length === 0) {
-    alert('Could not find numbered answers. Make sure the format starts with "MATCH RESULT:" and "ANSWERS:" sections.');
-    return;
-  }
-
-  if (!state[matchId]) state[matchId] = {};
-  state[matchId].result  = result;
-  state[matchId].answers = answers;
-  state[matchId].status  = 'answered';
-  saveState();
-  closePasteModal();
-  renderAll();
+  saveState(); renderAll();
 }
 
-// ── Reset ────────────────────────────────────────────────────────
+function getAnswers(matchId) {
+  if (hasCowork()) autoFetchAnswers(matchId);
+  else alert('Auto-fetch only works inside the Cowork app.');
+}
+
+function showPasteModal(matchId) { document.getElementById('paste-match-id').value=matchId; document.getElementById('paste-textarea').value=''; document.getElementById('paste-modal').classList.add('open'); }
+function closePasteModal() { document.getElementById('paste-modal').classList.remove('open'); }
+function saveAnswers() {
+  var matchId = document.getElementById('paste-match-id').value;
+  var text = document.getElementById('paste-textarea').value.trim();
+  if (!text) { alert('Please paste the result first.'); return; }
+  var parsed = parseAnswers(text);
+  if (!parsed.answers.length) { alert('Could not parse answers. Check the format.'); return; }
+  state[matchId] = Object.assign({}, getMS(matchId), { result:parsed.result, answers:parsed.answers, status:'answered', fetching:false });
+  saveState(); closePasteModal(); renderAll();
+}
+
 function resetMatch(matchId) {
-  if (!confirm('Reset all questions and answers for this match?')) return;
-  delete state[matchId];
-  saveState();
-  renderAll();
+  if (!confirm('Reset this match?')) return;
+  delete state[matchId]; saveState(); renderAll();
 }
 
-// ── Helpers ──────────────────────────────────────────────────────
-function typeColor(type) {
-  switch(type) {
-    case 'prediction': return '#3b82f6';
-    case 'player':     return '#8b5cf6';
-    case 'fantasy':    return '#f59e0b';
-    case 'stats':      return '#10b981';
-    default:           return '#64748b';
-  }
-}
-function typeLabel(type) {
-  switch(type) {
-    case 'prediction': return '🎯 Prediction';
-    case 'player':     return '⭐ Player';
-    case 'fantasy':    return '💫 Fantasy';
-    case 'stats':      return '📊 Stats';
-    default:           return type;
-  }
-}
+function typeColor(t) { return t==='prediction'?'#3b82f6':t==='player'?'#8b5cf6':t==='fantasy'?'#f59e0b':t==='stats'?'#10b981':'#64748b'; }
+function typeLabel(t) { return t==='prediction'?'🎯 Prediction':t==='player'?'⭐ Player':t==='fantasy'?'💫 Fantasy':t==='stats'?'📊 Stats':t; }
 
-// ── Render ───────────────────────────────────────────────────────
 function renderMatchCard(match) {
-  const ms = getMS(match.id);
-  const hasQ = ms.questions && ms.questions.length > 0;
-  const hasA = ms.answers   && ms.answers.length > 0;
+  var ms=getMS(match.id), hasQ=ms.questions&&ms.questions.length>0, hasA=ms.answers&&ms.answers.length>0;
+  var badge='';
+  if (hasA || ms.status==='answered')
+    badge='<span class="badge badge-answered">'+(ms.autoFetched?'🤖 Auto-answered':'✅ Answered')+'</span>';
+  else if (ms.fetching || ms.status==='fetching')
+    badge='<span class="badge badge-fetching"><span class="spinner" style="border-color:rgba(109,40,217,0.3);border-top-color:#6d28d9;width:10px;height:10px;margin-right:2px;"></span>Fetching...</span>';
+  else if (match.isTBD)
+    badge='<span class="badge badge-tbd">🔜 Teams TBD</span>';
+  else if (matchHasEnded(match))
+    badge='<span class="badge badge-pending-result">⏳ Result Pending</span>';
+  else
+    badge='<span class="badge badge-upcoming">📅 Upcoming</span>';
 
-  // Badge
-  let badge = '';
-  if (ms.status === 'answered') {
-    badge = `<span class="badge badge-answered">${ms.autoFetched ? '🤖 Auto-answered' : '✅ Answered'}</span>`;
-  } else if (ms.fetching || ms.status === 'fetching') {
-    badge = '<span class="badge badge-fetching"><span class="spinner" style="border-color:rgba(109,40,217,0.3);border-top-color:#6d28d9;"></span> Fetching results...</span>';
-  } else if (match.isTBD) {
-    badge = '<span class="badge badge-tbd">🔜 Teams TBD</span>';
-  } else if (matchHasEnded(match)) {
-    badge = '<span class="badge badge-pending-result">⏳ Result Pending</span>';
+  var teams='<div class="teams-row"><div class="team-block"><div class="team-abbr">'+match.teams[0]+'</div><div class="team-full">'+match.fullNames[0]+'</div></div><div class="vs-badge">VS</div><div class="team-block"><div class="team-abbr">'+match.teams[1]+'</div><div class="team-full">'+match.fullNames[1]+'</div></div></div>';
+  var meta='<div class="match-meta"><span>📅 '+match.date+'</span><span>⏰ '+match.time+'</span><span>🏟️ '+match.venue+'</span></div>';
+
+  var content='';
+  if (match.isTBD && !hasQ) {
+    content='<div class="tbd-note">Teams TBD — update and generate questions once confirmed.</div>';
+  } else if (!hasQ) {
+    content='<div style="text-align:center;padding:8px 0"><button class="btn btn-generate" id="gen-btn-'+match.id+'" onclick="generateQuestions(\''+match.id+'\')">✨ Generate 7 Questions</button></div>';
   } else {
-    badge = '<span class="badge badge-upcoming">📅 Upcoming</span>';
+    var qs=ms.questions.map(function(q,i){
+      var ans=ms.answers&&ms.answers[i]?ms.answers[i]:null, qt=q.type||'', qtxt=q.q||q;
+      return '<li class="question-item"><div style="flex:1">'+(qt?'<span style="font-size:0.68rem;font-weight:700;color:'+typeColor(qt)+';text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:3px">'+typeLabel(qt)+'</span>':'')+'<span class="q-text">'+qtxt+'</span>'+(ans?'<div class="q-answer">✅ '+ans+'</div>':'')+'</div></li>';
+    }).join('');
+    content='<hr class="divider"><div class="section-label">Quiz Questions</div><ol class="questions-list">'+qs+'</ol>'+(ms.result?'<div class="result-banner">🏏 '+ms.result+'</div>':'')+'<div class="btn-row">'+(!hasA?'<button class="btn btn-answer" onclick="getAnswers(\''+match.id+'\')">🔍 Get Answers</button><button class="btn btn-paste" onclick="showPasteModal(\''+match.id+'\')">📋 Paste</button>':'')+'<button class="btn btn-reset" onclick="resetMatch(\''+match.id+'\')">🔄 Reset</button></div>';
   }
 
-  // Teams
-  const teamsHTML = `
-    <div class="teams-row">
-      <div class="team-block">
-        <div class="team-abbr">${match.teams[0]}</div>
-        <div class="team-full">${match.fullNames[0]}</div>
-      </div>
-      <div class="vs-badge">VS</div>
-      <div class="team-block">
-        <div class="team-abbr">${match.teams[1]}</div>
-        <div class="team-full">${match.fullNames[1]}</div>
-      </div>
-    </div>`;
+  return '<div class="match-card'+(hasA?' answered':'')+(match.isFinal?' final-card':'')+'"><div class="card-strip '+match.strip+'"></div><div class="card-body"><div class="card-header"><span class="match-type-label'+(match.isFinal?' final-label':'')+'">'+match.emoji+' '+match.type+'</span>'+badge+'</div>'+teams+meta+content+'</div></div>';
+}
 
-  // Meta
-  const metaHTML = `
-    <div class="match-meta">
-      <span>📅 ${match.date}</span>
-      <span>⏰ ${match.time}</span>
-      <span>🏟️ ${match.venue}</span>
-    </div>`;
+function renderAll() {
+  document.getElementById('matches-container').innerHTML = MATCHES.map(renderMatchCard).join('');
+  updateMeta();
+}
 
-  // Questions / Actions
-  let contentHTML = '';
+document.getElementById('paste-modal').addEventListener('click', function(e){ if(e.target===this) closePasteModal(); });
+
+function autoAnswerCheck() {
+  if (!hasCowork()) return;
+  MATCHES.forEach(function(match){
+    if (match.isTBD) return;
+    var ms=getMS(match.id);
+    if (ms.questions&&ms.questions.length>0 && !(ms.answers&&ms.answers.length>0) && !ms.fetching && matchHasEnded(match))
+      autoFetchAnswers(match.id);
+  });
+}
+
+autoAnswerCheck();
+setInterval(autoAnswerCheck, 300000);
+renderAll();
+</script>
+</body>
+</html>
