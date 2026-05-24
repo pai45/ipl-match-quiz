@@ -97,10 +97,10 @@
   <div class="howto">
     <h3>⚡ How it works</h3>
     <div class="steps">
-      <div class="step"><div class="step-icon">✨</div><div class="step-title">Generate</div><div class="step-desc">Auto-generate 7 quiz questions per match</div></div>
-      <div class="step"><div class="step-icon">📋</div><div class="step-title">Predict</div><div class="step-desc">Review questions before match starts</div></div>
-      <div class="step"><div class="step-icon">🔍</div><div class="step-title">Auto-Fetch</div><div class="step-desc">Claude searches web for results after match ends</div></div>
-      <div class="step"><div class="step-icon">✅</div><div class="step-title">Verify</div><div class="step-desc">Answers populate automatically</div></div>
+      <div class="step"><div class="step-icon">✨</div><div class="step-title">Generate</div><div class="step-desc">Load 7 pre-set questions per match instantly</div></div>
+      <div class="step"><div class="step-icon">📋</div><div class="step-title">Predict</div><div class="step-desc">Lock in your predictions before the toss</div></div>
+      <div class="step"><div class="step-icon">🔍</div><div class="step-title">Auto-Fetch</div><div class="step-desc">Claude searches the web for results after match ends</div></div>
+      <div class="step"><div class="step-icon">✅</div><div class="step-title">Verify</div><div class="step-desc">Answers auto-populate — check your predictions</div></div>
     </div>
   </div>
   <div class="score-card" id="score-card"></div>
@@ -122,14 +122,73 @@
 <input type="hidden" id="paste-match-id" value="">
 <script>
 var MATCHES = [
-  { id:'mi-rr',  type:'Match 69',    strip:'strip-league', emoji:'🏏', teams:['MI','RR'],    fullNames:['Mumbai Indians','Rajasthan Royals'],                date:'May 24, 2026', time:'3:30 PM IST', venue:'Wankhede Stadium, Mumbai',            isFinal:false, isTBD:false },
-  { id:'kkr-dc', type:'Match 70',    strip:'strip-league', emoji:'🏏', teams:['KKR','DC'],   fullNames:['Kolkata Knight Riders','Delhi Capitals'],            date:'May 24, 2026', time:'7:30 PM IST', venue:'Eden Gardens, Kolkata',               isFinal:false, isTBD:false },
-  { id:'q1',     type:'Qualifier 1', strip:'strip-q1',     emoji:'🥊', teams:['RCB','GT'],   fullNames:['Royal Challengers Bengaluru','Gujarat Titans'],      date:'May 26, 2026', time:'7:30 PM IST', venue:'HPCA Stadium, Dharamsala',            isFinal:false, isTBD:false },
-  { id:'elim',   type:'Eliminator',  strip:'strip-elim',   emoji:'⚔️', teams:['SRH','RR'],   fullNames:['Sunrisers Hyderabad','Rajasthan Royals'],            date:'May 27, 2026', time:'7:30 PM IST', venue:'MYS Stadium, Mullanpur',              isFinal:false, isTBD:false },
-  { id:'q2',     type:'Qualifier 2', strip:'strip-q2',     emoji:'🎯', teams:['TBD','TBD'],  fullNames:['Loser of Qualifier 1','Winner of Eliminator'],       date:'May 29, 2026', time:'7:30 PM IST', venue:'MYS Stadium, Mullanpur',              isFinal:false, isTBD:true  },
-  { id:'final',  type:'FINAL',       strip:'strip-final',  emoji:'🏆', teams:['TBD','TBD'],  fullNames:['Winner of Qualifier 1','Winner of Qualifier 2'],     date:'May 31, 2026', time:'7:30 PM IST', venue:'Narendra Modi Stadium, Ahmedabad',    isFinal:true,  isTBD:true  }
+  { id:'mi-rr',  type:'Match 69',    strip:'strip-league', emoji:'🏏', teams:['MI','RR'],   fullNames:['Mumbai Indians','Rajasthan Royals'],             date:'May 24, 2026', time:'3:30 PM IST', venue:'Wankhede Stadium, Mumbai',          isFinal:false, isTBD:false },
+  { id:'kkr-dc', type:'Match 70',    strip:'strip-league', emoji:'🏏', teams:['KKR','DC'],  fullNames:['Kolkata Knight Riders','Delhi Capitals'],         date:'May 24, 2026', time:'7:30 PM IST', venue:'Eden Gardens, Kolkata',             isFinal:false, isTBD:false },
+  { id:'q1',     type:'Qualifier 1', strip:'strip-q1',     emoji:'🥊', teams:['RCB','GT'],  fullNames:['Royal Challengers Bengaluru','Gujarat Titans'],   date:'May 26, 2026', time:'7:30 PM IST', venue:'HPCA Stadium, Dharamsala',          isFinal:false, isTBD:false },
+  { id:'elim',   type:'Eliminator',  strip:'strip-elim',   emoji:'⚔️', teams:['SRH','RR'],  fullNames:['Sunrisers Hyderabad','Rajasthan Royals'],         date:'May 27, 2026', time:'7:30 PM IST', venue:'MYS Stadium, Mullanpur',            isFinal:false, isTBD:false },
+  { id:'q2',     type:'Qualifier 2', strip:'strip-q2',     emoji:'🎯', teams:['TBD','TBD'], fullNames:['Loser of Qualifier 1','Winner of Eliminator'],    date:'May 29, 2026', time:'7:30 PM IST', venue:'MYS Stadium, Mullanpur',            isFinal:false, isTBD:true  },
+  { id:'final',  type:'FINAL',       strip:'strip-final',  emoji:'🏆', teams:['TBD','TBD'], fullNames:['Winner of Qualifier 1','Winner of Qualifier 2'],  date:'May 31, 2026', time:'7:30 PM IST', venue:'Narendra Modi Stadium, Ahmedabad',  isFinal:true,  isTBD:true  }
 ];
 
+// Pre-set questions per match (stored in localStorage on click)
+var PRESET_QUESTIONS = {
+  'mi-rr': [
+    { q:'Who will win the match — Mumbai Indians or Rajasthan Royals?', type:'prediction' },
+    { q:'Who will win the toss?', type:'prediction' },
+    { q:'Who will be the top run-scorer of the match?', type:'player' },
+    { q:'Who will take the most wickets in the match?', type:'player' },
+    { q:'Who is the best fantasy captain pick for this match and why?', type:'fantasy' },
+    { q:'MI vs RR at Wankhede: which team has won more of their last 5 head-to-head meetings?', type:'stats' },
+    { q:'Who will win the Player of the Match award?', type:'player' }
+  ],
+  'kkr-dc': [
+    { q:'Who will win the match — Kolkata Knight Riders or Delhi Capitals?', type:'prediction' },
+    { q:'Who will win the toss?', type:'prediction' },
+    { q:'Who will be the top run-scorer of the match?', type:'player' },
+    { q:'Who will take the most wickets in the match?', type:'player' },
+    { q:'Who is the best fantasy captain pick for this match and why?', type:'fantasy' },
+    { q:'KKR vs DC at Eden Gardens: which team has a stronger record batting first at this venue?', type:'stats' },
+    { q:'Who will win the Player of the Match award?', type:'player' }
+  ],
+  'q1': [
+    { q:'Who will win Qualifier 1 and book a direct spot in the final — RCB or GT?', type:'prediction' },
+    { q:'Who will win the toss?', type:'prediction' },
+    { q:'Who will be the top run-scorer of the match?', type:'player' },
+    { q:'Who will take the most wickets in the match?', type:'player' },
+    { q:'Who is the best fantasy captain pick for this high-altitude Dharamsala game?', type:'fantasy' },
+    { q:'HPCA Dharamsala historically favours batsmen or bowlers? What is the average first innings score here in IPL?', type:'stats' },
+    { q:'Who will win the Player of the Match award?', type:'player' }
+  ],
+  'elim': [
+    { q:'Who survives the Eliminator — Sunrisers Hyderabad or Rajasthan Royals?', type:'prediction' },
+    { q:'Who will win the toss?', type:'prediction' },
+    { q:'Who will be the top run-scorer of the match?', type:'player' },
+    { q:'Who will take the most wickets in the match?', type:'player' },
+    { q:'Who is the best fantasy captain pick for this must-win knockout game?', type:'fantasy' },
+    { q:'SRH vs RR: which team has a better record in IPL knockout/eliminator matches historically?', type:'stats' },
+    { q:'Who will win the Player of the Match award?', type:'player' }
+  ],
+  'q2': [
+    { q:'Who will win Qualifier 2 and advance to the final?', type:'prediction' },
+    { q:'Who will win the toss?', type:'prediction' },
+    { q:'Who will be the top run-scorer of the match?', type:'player' },
+    { q:'Who will take the most wickets in the match?', type:'player' },
+    { q:'Who is the best fantasy captain pick for Qualifier 2?', type:'fantasy' },
+    { q:'What is the average first innings score at MYS Stadium, Mullanpur in IPL 2026?', type:'stats' },
+    { q:'Who will win the Player of the Match award?', type:'player' }
+  ],
+  'final': [
+    { q:'Who will lift the IPL 2026 trophy?', type:'prediction' },
+    { q:'Who will win the toss in the final?', type:'prediction' },
+    { q:'Who will be the top run-scorer of the final?', type:'player' },
+    { q:'Who will take the most wickets in the final?', type:'player' },
+    { q:'Who is the best fantasy captain pick for the IPL 2026 final?', type:'fantasy' },
+    { q:'Narendra Modi Stadium, Ahmedabad: what is the record highest score in an IPL final here?', type:'stats' },
+    { q:'Who will win the Player of the Match in the IPL 2026 final?', type:'player' }
+  ]
+};
+
+// State
 var state = {};
 try { state = JSON.parse(localStorage.getItem('ipl2026_quiz') || '{}'); } catch(e) { state = {}; }
 function saveState() { try { localStorage.setItem('ipl2026_quiz', JSON.stringify(state)); } catch(e) {} }
@@ -144,8 +203,8 @@ function matchHasEnded(m) {
 
 function updateMeta() {
   var total = MATCHES.length;
-  var withQ = MATCHES.filter(function(m){ var s=getMS(m.id); return s.questions && s.questions.length>0; }).length;
-  var withA = MATCHES.filter(function(m){ var s=getMS(m.id); return s.answers && s.answers.length>0; }).length;
+  var withQ = MATCHES.filter(function(m){ var s=getMS(m.id); return s.questions&&s.questions.length>0; }).length;
+  var withA = MATCHES.filter(function(m){ var s=getMS(m.id); return s.answers&&s.answers.length>0; }).length;
   document.getElementById('score-card').innerHTML =
     '<div class="score-item"><div class="score-num">'+total+'</div><div class="score-desc">Matches</div></div>'+
     '<div class="score-divider"></div>'+
@@ -154,123 +213,106 @@ function updateMeta() {
     '<div class="score-item"><div class="score-num">'+(withA*7)+'</div><div class="score-desc">Answers</div></div>'+
     '<div class="score-divider"></div>'+
     '<div class="score-item"><div class="score-num">'+withA+'/'+total+'</div><div class="score-desc">Completed</div></div>';
-  var pct = Math.round((withA/total)*100);
-  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-fill').style.width = Math.round((withA/total)*100)+'%';
   document.getElementById('progress-label').textContent =
     withA===total ? '🎉 All matches completed!' : withA+' of '+total+' answered · '+withQ+' quizzes ready';
 }
 
-function hasCowork() { return !!(window.cowork && window.cowork.askClaude); }
-
-function coerceString(raw) {
-  if (typeof raw === 'string') return raw;
-  if (raw && raw.text) return raw.text;
-  if (raw && raw.content) return raw.content;
-  if (raw && raw.message) return raw.message;
-  return JSON.stringify(raw);
+// Generate: load preset questions into localStorage (works everywhere, no Cowork needed)
+function generateQuestions(matchId) {
+  var questions = PRESET_QUESTIONS[matchId];
+  if (!questions) { alert('No preset questions available for this match yet.'); return; }
+  state[matchId] = { questions: questions, answers:[], result:'', status:'upcoming', fetching:false };
+  saveState();
+  renderAll();
 }
 
+function hasCowork() { return !!(window.cowork && window.cowork.askClaude); }
+function coerceString(raw) {
+  if (typeof raw === 'string') return raw;
+  return (raw&&(raw.text||raw.content||raw.message)) || JSON.stringify(raw);
+}
 function parseAnswers(text) {
   var result='', answers=[], inA=false;
   text.split('\n').forEach(function(raw){
     var line=raw.trim(); if(!line) return;
     if(/^MATCH RESULT:/i.test(line)) result=line.replace(/^MATCH RESULT:\s*/i,'');
     else if(/^ANSWERS:/i.test(line)) inA=true;
-    else if(inA && /^\d+[\.\)]\s+/.test(line)) answers.push(line.replace(/^\d+[\.\)]\s+/,''));
+    else if(inA&&/^\d+[\.\)]\s+/.test(line)) answers.push(line.replace(/^\d+[\.\)]\s+/,''));
   });
   return { result:result, answers:answers };
 }
 
-async function generateQuestions(matchId) {
-  if (!hasCowork()) { alert('Question generation only works inside the Cowork app.'); return; }
-  var match = MATCHES.find(function(m){ return m.id===matchId; });
-  var btn = document.getElementById('gen-btn-'+matchId);
-  if (!btn) return;
-  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Generating...';
-  try {
-    var prompt = 'You are an expert IPL cricket analyst. Generate exactly 7 quiz questions for the IPL 2026 '+match.type+' match: '+match.fullNames[0]+' vs '+match.fullNames[1]+' on '+match.date+' at '+match.venue+'.\n\nInclude: 1) Match winner 2) Toss winner 3) Top run-scorer 4) Top wicket-taker 5) Fantasy captain 6) Head-to-head/venue stat 7) Player of the Match.\n\nRespond with ONLY a valid JSON array. Each item: {"q":"question","type":"prediction|player|fantasy|stats"}\nExample: [{"q":"Who will win?","type":"prediction"}]';
-    var result = coerceString(await window.cowork.askClaude(prompt, []));
-    var jsonMatch = result.match(/\[[\s\S]*?\]/);
-    if (!jsonMatch) throw new Error('No JSON found');
-    var questions = JSON.parse(jsonMatch[0]);
-    if (!Array.isArray(questions) || !questions.length) throw new Error('Empty');
-    state[matchId] = { questions:questions.slice(0,7), answers:[], result:'', status:'upcoming', fetching:false };
-    saveState(); renderAll();
-  } catch(err) {
-    btn.disabled=false; btn.innerHTML='✨ Generate Questions';
-    alert('Could not generate. Try again.\n'+(err.message||''));
-  }
-}
-
+// Auto-fetch answers after match ends (Cowork only)
 async function autoFetchAnswers(matchId) {
   if (!hasCowork()) return;
   var match = MATCHES.find(function(m){ return m.id===matchId; });
   var ms = getMS(matchId);
-  if (!match || (ms.answers && ms.answers.length>0) || ms.fetching) return;
-  state[matchId] = Object.assign({}, ms, { fetching:true, status:'fetching' });
+  if (!match||(ms.answers&&ms.answers.length>0)||ms.fetching) return;
+  state[matchId] = Object.assign({},ms,{fetching:true,status:'fetching'});
   saveState(); renderAll();
-  var qList = (ms.questions||[]).map(function(q,i){ return (i+1)+'. '+(q.q||q); }).join('\n');
-  var prompt = 'Search the web for the result of IPL 2026 '+match.type+': '+match.fullNames[0]+' vs '+match.fullNames[1]+' on '+match.date+' at '+match.venue+'.\n\nAnswer these questions based on the actual result:\n'+qList+'\n\nRespond ONLY in this format:\nMATCH RESULT: [one-line summary]\nANSWERS:\n1. [Answer]\n2. [Answer]\n3. [Answer]\n4. [Answer]\n5. [Answer]\n6. [Answer]\n7. [Answer]';
+  var qList=(ms.questions||[]).map(function(q,i){ return (i+1)+'. '+(q.q||q); }).join('\n');
+  var prompt='Search the web for the result of IPL 2026 '+match.type+': '+match.fullNames[0]+' vs '+match.fullNames[1]+' on '+match.date+' at '+match.venue+'.\n\nAnswer these questions based on the actual result:\n'+qList+'\n\nRespond ONLY in this format:\nMATCH RESULT: [one-line summary]\nANSWERS:\n1. [Answer]\n2. [Answer]\n3. [Answer]\n4. [Answer]\n5. [Answer]\n6. [Answer]\n7. [Answer]';
   try {
-    var parsed = parseAnswers(coerceString(await window.cowork.askClaude(prompt, [])));
-    if (parsed.answers.length > 0) {
-      state[matchId] = Object.assign({}, getMS(matchId), { result:parsed.result, answers:parsed.answers, status:'answered', fetching:false, autoFetched:true });
+    var parsed=parseAnswers(coerceString(await window.cowork.askClaude(prompt,[])));
+    if(parsed.answers.length>0) {
+      state[matchId]=Object.assign({},getMS(matchId),{result:parsed.result,answers:parsed.answers,status:'answered',fetching:false,autoFetched:true});
     } else {
-      state[matchId] = Object.assign({}, getMS(matchId), { fetching:false, status:'upcoming' });
+      state[matchId]=Object.assign({},getMS(matchId),{fetching:false,status:'upcoming'});
     }
   } catch(e) {
-    state[matchId] = Object.assign({}, getMS(matchId), { fetching:false, status:'upcoming' });
+    state[matchId]=Object.assign({},getMS(matchId),{fetching:false,status:'upcoming'});
   }
   saveState(); renderAll();
 }
 
 function getAnswers(matchId) {
-  if (hasCowork()) autoFetchAnswers(matchId);
-  else alert('Auto-fetch only works inside the Cowork app.');
+  if(hasCowork()) autoFetchAnswers(matchId);
+  else alert('Auto-fetch works only inside the Cowork app. Use "Paste Answers" to enter results manually.');
 }
 
 function showPasteModal(matchId) { document.getElementById('paste-match-id').value=matchId; document.getElementById('paste-textarea').value=''; document.getElementById('paste-modal').classList.add('open'); }
 function closePasteModal() { document.getElementById('paste-modal').classList.remove('open'); }
 function saveAnswers() {
-  var matchId = document.getElementById('paste-match-id').value;
-  var text = document.getElementById('paste-textarea').value.trim();
-  if (!text) { alert('Please paste the result first.'); return; }
-  var parsed = parseAnswers(text);
-  if (!parsed.answers.length) { alert('Could not parse answers. Check the format.'); return; }
-  state[matchId] = Object.assign({}, getMS(matchId), { result:parsed.result, answers:parsed.answers, status:'answered', fetching:false });
+  var matchId=document.getElementById('paste-match-id').value;
+  var text=document.getElementById('paste-textarea').value.trim();
+  if(!text){ alert('Please paste the result first.'); return; }
+  var parsed=parseAnswers(text);
+  if(!parsed.answers.length){ alert('Could not parse. Check the format.'); return; }
+  state[matchId]=Object.assign({},getMS(matchId),{result:parsed.result,answers:parsed.answers,status:'answered',fetching:false});
   saveState(); closePasteModal(); renderAll();
 }
 
 function resetMatch(matchId) {
-  if (!confirm('Reset this match?')) return;
+  if(!confirm('Reset this match?')) return;
   delete state[matchId]; saveState(); renderAll();
 }
 
-function typeColor(t) { return t==='prediction'?'#3b82f6':t==='player'?'#8b5cf6':t==='fantasy'?'#f59e0b':t==='stats'?'#10b981':'#64748b'; }
-function typeLabel(t) { return t==='prediction'?'🎯 Prediction':t==='player'?'⭐ Player':t==='fantasy'?'💫 Fantasy':t==='stats'?'📊 Stats':t; }
+function typeColor(t){ return t==='prediction'?'#3b82f6':t==='player'?'#8b5cf6':t==='fantasy'?'#f59e0b':t==='stats'?'#10b981':'#64748b'; }
+function typeLabel(t){ return t==='prediction'?'🎯 Prediction':t==='player'?'⭐ Player':t==='fantasy'?'💫 Fantasy':t==='stats'?'📊 Stats':t; }
 
 function renderMatchCard(match) {
   var ms=getMS(match.id), hasQ=ms.questions&&ms.questions.length>0, hasA=ms.answers&&ms.answers.length>0;
   var badge='';
-  if (hasA || ms.status==='answered')
+  if(hasA||ms.status==='answered')
     badge='<span class="badge badge-answered">'+(ms.autoFetched?'🤖 Auto-answered':'✅ Answered')+'</span>';
-  else if (ms.fetching || ms.status==='fetching')
+  else if(ms.fetching||ms.status==='fetching')
     badge='<span class="badge badge-fetching"><span class="spinner" style="border-color:rgba(109,40,217,0.3);border-top-color:#6d28d9;width:10px;height:10px;margin-right:2px;"></span>Fetching...</span>';
-  else if (match.isTBD)
+  else if(match.isTBD)
     badge='<span class="badge badge-tbd">🔜 Teams TBD</span>';
-  else if (matchHasEnded(match))
+  else if(matchHasEnded(match))
     badge='<span class="badge badge-pending-result">⏳ Result Pending</span>';
   else
     badge='<span class="badge badge-upcoming">📅 Upcoming</span>';
 
   var teams='<div class="teams-row"><div class="team-block"><div class="team-abbr">'+match.teams[0]+'</div><div class="team-full">'+match.fullNames[0]+'</div></div><div class="vs-badge">VS</div><div class="team-block"><div class="team-abbr">'+match.teams[1]+'</div><div class="team-full">'+match.fullNames[1]+'</div></div></div>';
   var meta='<div class="match-meta"><span>📅 '+match.date+'</span><span>⏰ '+match.time+'</span><span>🏟️ '+match.venue+'</span></div>';
-
   var content='';
-  if (match.isTBD && !hasQ) {
-    content='<div class="tbd-note">Teams TBD — update and generate questions once confirmed.</div>';
-  } else if (!hasQ) {
-    content='<div style="text-align:center;padding:8px 0"><button class="btn btn-generate" id="gen-btn-'+match.id+'" onclick="generateQuestions(\''+match.id+'\')">✨ Generate 7 Questions</button></div>';
+
+  if(match.isTBD&&!hasQ) {
+    content='<div class="tbd-note">Teams TBD — questions will be available once confirmed.</div>';
+  } else if(!hasQ) {
+    content='<div style="text-align:center;padding:8px 0"><button class="btn btn-generate" id="gen-btn-'+match.id+'" onclick="generateQuestions(\''+match.id+'\')">✨ Load Questions</button></div>';
   } else {
     var qs=ms.questions.map(function(q,i){
       var ans=ms.answers&&ms.answers[i]?ms.answers[i]:null, qt=q.type||'', qtxt=q.q||q;
@@ -283,24 +325,25 @@ function renderMatchCard(match) {
 }
 
 function renderAll() {
-  document.getElementById('matches-container').innerHTML = MATCHES.map(renderMatchCard).join('');
+  document.getElementById('matches-container').innerHTML=MATCHES.map(renderMatchCard).join('');
   updateMeta();
 }
 
-document.getElementById('paste-modal').addEventListener('click', function(e){ if(e.target===this) closePasteModal(); });
+document.getElementById('paste-modal').addEventListener('click',function(e){ if(e.target===this) closePasteModal(); });
 
+// Auto-answer check every 5 min (Cowork only)
 function autoAnswerCheck() {
-  if (!hasCowork()) return;
+  if(!hasCowork()) return;
   MATCHES.forEach(function(match){
-    if (match.isTBD) return;
+    if(match.isTBD) return;
     var ms=getMS(match.id);
-    if (ms.questions&&ms.questions.length>0 && !(ms.answers&&ms.answers.length>0) && !ms.fetching && matchHasEnded(match))
+    if(ms.questions&&ms.questions.length>0&&!(ms.answers&&ms.answers.length>0)&&!ms.fetching&&matchHasEnded(match))
       autoFetchAnswers(match.id);
   });
 }
 
 autoAnswerCheck();
-setInterval(autoAnswerCheck, 300000);
+setInterval(autoAnswerCheck,300000);
 renderAll();
 </script>
 </body>
