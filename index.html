@@ -153,6 +153,7 @@
   .badge-answered  { background: #dcfce7; color: #15803d; }
   .badge-pending-result { background: #fef9c3; color: #92400e; }
   .badge-tbd       { background: #f1f5f9; color: #94a3b8; }
+  .badge-fetching  { background: #ede9fe; color: #6d28d9; }
 
   /* Teams display */
   .teams-row {
@@ -724,30 +725,97 @@ Example format:
   }
 }
 
-// ── Get Answers (opens chat) ────────────────────────────────────
-function getAnswers(matchId) {
+// ── Match end time check (start + 4 hours) ─────────────────────
+function matchHasEnded(match) {
+  try {
+    const [datePart] = [match.date];
+    const timeStr = match.time.replace(' IST', '');
+    const dt = new Date(`${datePart} ${timeStr}`);
+    // IST = UTC+5:30
+    const utcMs = dt.getTime() - (5.5 * 60 * 60 * 1000);
+    const endUtcMs = utcMs + (4 * 60 * 60 * 1000); // match + 4hrs
+    return Date.now() > endUtcMs;
+  } catch(e) { return false; }
+}
+
+// ── Auto-fetch answers via Claude ───────────────────────────────
+async function autoFetchAnswers(matchId) {
   const match = MATCHES.find(m => m.id === matchId);
   const ms = getMS(matchId);
+  if (!match || ms.answers?.length > 0 || ms.fetching) return;
+
+  // Mark as fetching to prevent duplicate calls
+  if (!state[matchId]) state[matchId] = {};
+  state[matchId].fetching = true;
+  state[matchId].status = 'fetching';
+  saveState();
+  renderAll();
+
   const qList = (ms.questions || []).map((q, i) => `${i+1}. ${q.q || q}`).join('\n');
 
-  const prompt =
-`Search the web for the result of the IPL 2026 ${match.type}: ${match.fullNames[0]} vs ${match.fullNames[1]} on ${match.date}.
+  const prompt = `Search the web for the live result of the IPL 2026 ${match.type} match: ${match.fullNames[0]} vs ${match.fullNames[1]} played on ${match.date} at ${match.venue}.
 
-Then answer these pre-match quiz questions based on the actual result:
+Find the actual match result and answer these pre-match quiz questions based on what really happened:
 ${qList}
 
-Please format your response EXACTLY like this so I can paste it into my tracker:
-MATCH RESULT: [one-line match summary with winner and margin]
+Respond ONLY in this exact format, no extra text:
+MATCH RESULT: [one-line summary with winner and margin e.g. "RCB won by 6 wickets"]
 ANSWERS:
-1. [Answer to Q1]
-2. [Answer to Q2]
-3. [Answer to Q3]
-4. [Answer to Q4]
-5. [Answer to Q5]
-6. [Answer to Q6]
-7. [Answer to Q7]`;
+1. [Answer]
+2. [Answer]
+3. [Answer]
+4. [Answer]
+5. [Answer]
+6. [Answer]
+7. [Answer]`;
 
-  sendPrompt(prompt);
+  try {
+    const raw = await window.cowork.askClaude(prompt, []);
+    const result = typeof raw === 'string' ? raw
+      : (raw?.text ?? raw?.content ?? raw?.message ?? JSON.stringify(raw));
+
+    // Parse result
+    let matchResult = '';
+    const answers = [];
+    const lines = result.split('\n');
+    let inAnswers = false;
+
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line) continue;
+      if (/^MATCH RESULT:/i.test(line)) {
+        matchResult = line.replace(/^MATCH RESULT:\s*/i, '').trim();
+      } else if (/^ANSWERS:/i.test(line)) {
+        inAnswers = true;
+      } else if (inAnswers && /^\d+[\.\)]\s+/.test(line)) {
+        answers.push(line.replace(/^\d+[\.\)]\s+/, '').trim());
+      }
+    }
+
+    if (answers.length > 0) {
+      state[matchId].result   = matchResult;
+      state[matchId].answers  = answers;
+      state[matchId].status   = 'answered';
+      state[matchId].fetching = false;
+      state[matchId].autoFetched = true;
+    } else {
+      // No answers parsed — retry later
+      state[matchId].fetching = false;
+      state[matchId].status   = 'upcoming';
+    }
+    saveState();
+    renderAll();
+  } catch(err) {
+    state[matchId].fetching = false;
+    state[matchId].status   = 'upcoming';
+    saveState();
+    renderAll();
+  }
+}
+
+// ── Manual Get Answers button (fallback) ────────────────────────
+function getAnswers(matchId) {
+  autoFetchAnswers(matchId);
 }
 
 // ── Paste Modal ─────────────────────────────────────────────────
@@ -837,15 +905,15 @@ function renderMatchCard(match) {
   // Badge
   let badge = '';
   if (ms.status === 'answered') {
-    badge = '<span class="badge badge-answered">✅ Answered</span>';
+    badge = `<span class="badge badge-answered">${ms.autoFetched ? '🤖 Auto-answered' : '✅ Answered'}</span>`;
+  } else if (ms.fetching || ms.status === 'fetching') {
+    badge = '<span class="badge badge-fetching"><span class="spinner" style="border-color:rgba(109,40,217,0.3);border-top-color:#6d28d9;"></span> Fetching results...</span>';
   } else if (match.isTBD) {
     badge = '<span class="badge badge-tbd">🔜 Teams TBD</span>';
+  } else if (matchHasEnded(match)) {
+    badge = '<span class="badge badge-pending-result">⏳ Result Pending</span>';
   } else {
-    const matchDate = new Date(match.date + ' 2026');
-    const now = new Date();
-    badge = matchDate < now
-      ? '<span class="badge badge-pending-result">⏳ Result Pending</span>'
-      : '<span class="badge badge-upcoming">📅 Upcoming</span>';
+    badge = '<span class="badge badge-upcoming">📅 Upcoming</span>';
   }
 
   // Teams
@@ -878,68 +946,4 @@ function renderMatchCard(match) {
   } else if (!hasQ) {
     contentHTML = `
       <div style="text-align:center; padding: 8px 0;">
-        <button class="btn btn-generate" id="gen-btn-${match.id}" onclick="generateQuestions('${match.id}')">
-          ✨ Generate 7 Questions
-        </button>
-      </div>`;
-  } else {
-    // Questions list
-    const questionsHTML = ms.questions.map((q, i) => {
-      const qText = q.q || q;
-      const qType = q.type || '';
-      const answer = ms.answers[i] || null;
-      return `
-        <li class="question-item">
-          <div style="flex:1">
-            ${qType ? `<span style="font-size:0.68rem;font-weight:700;color:${typeColor(qType)};text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;display:block;">${typeLabel(qType)}</span>` : ''}
-            <span class="q-text">${qText}</span>
-            ${answer ? `<div class="q-answer">✅ ${answer}</div>` : ''}
-          </div>
-        </li>`;
-    }).join('');
-
-    contentHTML = `
-      <hr class="divider">
-      <div class="section-label">Quiz Questions</div>
-      <ol class="questions-list">${questionsHTML}</ol>
-      ${ms.result ? `<div class="result-banner">🏏 ${ms.result}</div>` : ''}
-      <div class="btn-row">
-        ${!hasA ? `
-          <button class="btn btn-answer" onclick="getAnswers('${match.id}')">🔍 Get Answers</button>
-          <button class="btn btn-paste"  onclick="showPasteModal('${match.id}')">📋 Paste Answers</button>
-        ` : ''}
-        <button class="btn btn-reset" onclick="resetMatch('${match.id}')">🔄 Reset</button>
-      </div>`;
-  }
-
-  return `
-    <div class="match-card ${ms.status === 'answered' ? 'answered' : ''} ${match.isFinal ? 'final-card' : ''}">
-      <div class="card-strip ${match.strip}"></div>
-      <div class="card-body">
-        <div class="card-header">
-          <span class="match-type-label ${match.isFinal ? 'final-label' : ''}">${match.emoji} ${match.type}</span>
-          ${badge}
-        </div>
-        ${teamsHTML}
-        ${metaHTML}
-        ${contentHTML}
-      </div>
-    </div>`;
-}
-
-function renderAll() {
-  document.getElementById('matches-container').innerHTML =
-    MATCHES.map(renderMatchCard).join('');
-  updateMeta();
-}
-
-// ── Close modal on overlay click ─────────────────────────────────
-document.getElementById('paste-modal').addEventListener('click', function(e) {
-  if (e.target === this) closePasteModal();
-});
-
-// ── Init ─────────────────────────────────────────────────────────
-renderAll();
-</script>
-</body>
-</html>
+        <button class="btn btn-generate" id="gen-btn-${match.id}" onclic
