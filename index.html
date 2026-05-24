@@ -342,6 +342,36 @@ function autoAnswerCheck() {
   });
 }
 
+
+// ── Poll /api/ipl-results for completed match data ───────────────
+async function pollApiResults() {
+  try {
+    var res = await fetch('/api/ipl-results');
+    if (!res.ok) return;
+    var data = await res.json();
+    if (!data.success || !data.results) return;
+    var updated = false;
+    Object.keys(data.results).forEach(function(matchId) {
+      var ms = getMS(matchId);
+      if (ms.answers && ms.answers.length > 0) return; // already answered
+      var r = data.results[matchId];
+      if (!r || !r.answers || !r.answers.length) return;
+      state[matchId] = Object.assign({}, ms, {
+        result: r.result || '',
+        answers: r.answers,
+        status: 'answered',
+        fetching: false,
+        autoFetched: true
+      });
+      updated = true;
+    });
+    if (updated) { saveState(); renderAll(); }
+  } catch(e) { /* silently ignore — API may not be available */ }
+}
+
+// Poll on load + every 5 minutes
+pollApiResults();
+setInterval(pollApiResults, 300000);
 autoAnswerCheck();
 setInterval(autoAnswerCheck,300000);
 renderAll();
